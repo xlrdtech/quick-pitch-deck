@@ -5,70 +5,347 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quick Pitch Deck</title>
     <style>
-        body {
+        * {
             margin: 0;
             padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        .deck-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
             display: flex;
-            flex-direction: column;
             align-items: center;
             justify-content: center;
-            min-height: 100vh;
         }
-        .container {
-            text-align: center;
-            padding: 2rem;
-            max-width: 1200px;
-        }
-        h1 {
-            color: white;
-            font-size: 3rem;
-            margin-bottom: 1rem;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-        }
-        p {
-            color: rgba(255,255,255,0.9);
-            font-size: 1.2rem;
-            margin-bottom: 2rem;
-        }
-        .pdf-viewer {
+
+        .slide {
+            position: absolute;
+            width: 90%;
+            max-width: 1000px;
+            height: 90%;
+            max-height: 600px;
             background: white;
-            border-radius: 12px;
+            border-radius: 20px;
             box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-            overflow: hidden;
-            margin: 2rem auto;
+            padding: 60px;
+            opacity: 0;
+            transform: translateX(100%);
+            transition: all 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
         }
-        iframe {
-            width: 100%;
-            height: 80vh;
-            border: none;
+
+        .slide.active {
+            opacity: 1;
+            transform: translateX(0);
         }
-        .download-btn {
-            display: inline-block;
-            padding: 15px 40px;
-            background: white;
+
+        .slide.prev {
+            transform: translateX(-100%);
+        }
+
+        h1 {
             color: #667eea;
-            text-decoration: none;
-            border-radius: 50px;
-            font-weight: 600;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-            transition: transform 0.3s ease;
+            font-size: 3.5rem;
+            margin-bottom: 20px;
+            font-weight: 800;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
         }
-        .download-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+
+        h2 {
+            color: #764ba2;
+            font-size: 2.5rem;
+            margin-bottom: 30px;
+            font-weight: 700;
+        }
+
+        p {
+            color: rgba(0,0,0,0.7);
+            font-size: 1.3rem;
+            line-height: 1.8;
+            margin-bottom: 20px;
+        }
+
+        .subtitle {
+            color: rgba(0,0,0,0.5);
+            font-size: 1.5rem;
+            font-weight: 300;
+        }
+
+        ul {
+            list-style: none;
+            margin: 20px 0;
+        }
+
+        ul li {
+            color: rgba(0,0,0,0.8);
+            font-size: 1.2rem;
+            margin: 15px 0;
+            padding-left: 30px;
+            position: relative;
+        }
+
+        ul li:before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            color: #667eea;
+            font-weight: bold;
+            font-size: 1.4rem;
+        }
+
+        .highlight {
+            background: linear-gradient(120deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 700;
+        }
+
+        .cta {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 18px 40px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-top: 30px;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .cta:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+        }
+
+        .navigation {
+            position: fixed;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 15px;
+            z-index: 1000;
+        }
+
+        .nav-btn {
+            background: rgba(255,255,255,0.9);
+            border: none;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.5rem;
+            color: #667eea;
+            transition: all 0.3s;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .nav-btn:hover {
+            background: white;
+            transform: scale(1.1);
+        }
+
+        .slide-counter {
+            position: fixed;
+            top: 30px;
+            right: 40px;
+            color: white;
+            font-size: 1.2rem;
+            font-weight: 600;
+            background: rgba(255,255,255,0.2);
+            padding: 10px 20px;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+        }
+
+        .metric {
+            display: inline-block;
+            margin: 20px 30px 20px 0;
+        }
+
+        .metric-value {
+            font-size: 3rem;
+            font-weight: 800;
+            color: #667eea;
+            display: block;
+        }
+
+        .metric-label {
+            font-size: 1rem;
+            color: rgba(0,0,0,0.6);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        @media (max-width: 768px) {
+            .slide {
+                padding: 30px;
+            }
+            h1 { font-size: 2.5rem; }
+            h2 { font-size: 1.8rem; }
+            p { font-size: 1.1rem; }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Quick Pitch Deck</h1>
-        <p>Professional pitch deck template with 6 slides</p>
-        <div class="pdf-viewer">
-            <iframe src="Quick Pitch Deck.pdf"></iframe>
+    <div class="deck-container">
+        <!-- Slide 1: Title -->
+        <div class="slide active">
+            <h1>Your Company Name</h1>
+            <p class="subtitle">Revolutionizing [Your Industry] with [Your Solution]</p>
+            <p style="margin-top: 40px; font-size: 1.1rem;">Press → to continue</p>
         </div>
-        <a href="Quick Pitch Deck.pdf" download class="download-btn">Download PDF</a>
+
+        <!-- Slide 2: Problem -->
+        <div class="slide">
+            <h2>The Problem</h2>
+            <p>The market faces a critical challenge:</p>
+            <ul>
+                <li><span class="highlight">$X billion</span> lost annually due to inefficiency</li>
+                <li>Current solutions are slow, expensive, and complex</li>
+                <li>Customers are frustrated with the status quo</li>
+                <li>Market is ready for disruption</li>
+            </ul>
+        </div>
+
+        <!-- Slide 3: Solution -->
+        <div class="slide">
+            <h2>Our Solution</h2>
+            <p>We've built a platform that:</p>
+            <ul>
+                <li>Reduces costs by <span class="highlight">70%</span></li>
+                <li>Delivers results in <span class="highlight">minutes</span>, not days</li>
+                <li>Uses AI/ML to automate complex workflows</li>
+                <li>Integrates seamlessly with existing tools</li>
+            </ul>
+        </div>
+
+        <!-- Slide 4: Market -->
+        <div class="slide">
+            <h2>Market Opportunity</h2>
+            <div class="metric">
+                <span class="metric-value">$XXB</span>
+                <span class="metric-label">TAM</span>
+            </div>
+            <div class="metric">
+                <span class="metric-value">$XB</span>
+                <span class="metric-label">SAM</span>
+            </div>
+            <div class="metric">
+                <span class="metric-value">$XXM</span>
+                <span class="metric-label">SOM</span>
+            </div>
+            <p style="margin-top: 30px;">Growing at <span class="highlight">XX% CAGR</span> with strong tailwinds in AI, automation, and digital transformation.</p>
+        </div>
+
+        <!-- Slide 5: Traction -->
+        <div class="slide">
+            <h2>Traction & Metrics</h2>
+            <div class="metric">
+                <span class="metric-value">X,XXX</span>
+                <span class="metric-label">Active Users</span>
+            </div>
+            <div class="metric">
+                <span class="metric-value">XX%</span>
+                <span class="metric-label">MoM Growth</span>
+            </div>
+            <div class="metric">
+                <span class="metric-value">$XXK</span>
+                <span class="metric-label">MRR</span>
+            </div>
+            <p style="margin-top: 30px;">Launched X months ago • Top customers include [Brand Names]</p>
+        </div>
+
+        <!-- Slide 6: Call to Action -->
+        <div class="slide">
+            <h2>Let's Build Together</h2>
+            <p>We're raising <span class="highlight">$X million</span> to:</p>
+            <ul>
+                <li>Scale our engineering team</li>
+                <li>Expand to new markets</li>
+                <li>Accelerate product development</li>
+            </ul>
+            <a href="#" class="cta">Let's Talk →</a>
+        </div>
     </div>
+
+    <div class="slide-counter">
+        <span id="current-slide">1</span> / 6
+    </div>
+
+    <div class="navigation">
+        <button class="nav-btn" onclick="prevSlide()">←</button>
+        <button class="nav-btn" onclick="nextSlide()">→</button>
+    </div>
+
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length;
+
+        function showSlide(n) {
+            slides.forEach(slide => {
+                slide.classList.remove('active', 'prev');
+            });
+            
+            if (n >= totalSlides) currentSlide = 0;
+            if (n < 0) currentSlide = totalSlides - 1;
+            
+            slides[currentSlide].classList.add('active');
+            if (currentSlide > 0) {
+                slides[currentSlide - 1].classList.add('prev');
+            }
+            
+            document.getElementById('current-slide').textContent = currentSlide + 1;
+        }
+
+        function nextSlide() {
+            currentSlide++;
+            if (currentSlide >= totalSlides) currentSlide = 0;
+            showSlide(currentSlide);
+        }
+
+        function prevSlide() {
+            currentSlide--;
+            if (currentSlide < 0) currentSlide = totalSlides - 1;
+            showSlide(currentSlide);
+        }
+
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' || e.key === ' ') nextSlide();
+            if (e.key === 'ArrowLeft') prevSlide();
+        });
+
+        // Touch/swipe support for mobile
+        let touchStartX = 0;
+        let touchEndX = 0;
+
+        document.addEventListener('touchstart', (e) => {
+            touchStartX = e.changedTouches[0].screenX;
+        });
+
+        document.addEventListener('touchend', (e) => {
+            touchEndX = e.changedTouches[0].screenX;
+            handleSwipe();
+        });
+
+        function handleSwipe() {
+            if (touchEndX < touchStartX - 50) nextSlide();
+            if (touchEndX > touchStartX + 50) prevSlide();
+        }
+    </script>
 </body>
 </html>
